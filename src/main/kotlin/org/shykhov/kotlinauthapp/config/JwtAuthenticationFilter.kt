@@ -7,6 +7,11 @@ import lombok.RequiredArgsConstructor
 import org.shykhov.kotlinauthapp.service.JwtService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.lang.NonNull
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
@@ -14,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @RequiredArgsConstructor
 class JwtAuthenticationFilter(
     @Autowired val jwtService: JwtService,
+    @Autowired val userDetailsService: UserDetailsService
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         @NonNull request: HttpServletRequest,
@@ -26,6 +32,15 @@ class JwtAuthenticationFilter(
             return
         }
         val jwtToken: String = authHeader.substring(7)
-        val userEmail: String = jwtService.extractUsername(jwtToken)
+        val userEmail: String? = jwtService.extractUsername(jwtToken)
+        if (userEmail != null && SecurityContextHolder.getContext().authentication == null) {
+            val userDetails: UserDetails = userDetailsService.loadUserByUsername(userEmail)
+            if (jwtService.isTokenValid(jwtToken, userDetails)) {
+                val authToken= UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authToken
+            }
+        }
+        filterChain.doFilter(request, response)
     }
 }

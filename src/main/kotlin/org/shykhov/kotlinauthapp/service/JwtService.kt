@@ -15,10 +15,10 @@ import java.util.function.Function;
 class JwtService {
 
     companion object {
-        private const val SECRET_KEY = "6IIuzJ6U7QNRWCasS3efT15CtyVicJ3PKYbSu3uVyRrD8qweX6LVStc5QIYpySCa";
+        private const val SECRET_KEY = "6IIuzJ6U7QNRWCasS3efT15CtyVicJ3PKYbSu3uVyRrD8qweX6LVStc5QIYpySCa"
     }
 
-    fun extractUsername(token: String): String {
+    fun extractUsername(token: String): String? {
         return extractClaim(token, Claims::getSubject)
     }
 
