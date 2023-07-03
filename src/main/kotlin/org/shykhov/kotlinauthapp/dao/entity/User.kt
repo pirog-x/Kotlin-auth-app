@@ -14,7 +14,7 @@ data class User (
     val firstName: String,
     val lastName: String,
     val email: String,
-    val password: String,
+    val passwd: String,
     @Enumerated(EnumType.STRING)
     val role: Role
 ): UserDetails {
@@ -23,7 +23,7 @@ data class User (
     }
 
     override fun getPassword(): String {
-        return password
+        return passwd
     }
 
     override fun getUsername(): String {
