@@ -21,7 +21,8 @@ class AuthenticationService(
     val passwordEncoder: PasswordEncoder,
     val jwtService: JwtService,
     val authenticationManager: AuthenticationManager,
-    val tokenRepository: TokenRepository
+    val tokenRepository: TokenRepository,
+    val loginService: LoginService,
 ) {
     fun register(registerRequest: RegisterRequest): AuthenticationResponse {
         val user = User(
@@ -38,7 +39,8 @@ class AuthenticationService(
         val refreshToken = jwtService.generateRefreshToken(user)
 
         saveUserToken(savedUser, jwtToken)
-        return AuthenticationResponse(jwtToken, refreshToken)
+        loginService.save(savedUser)
+        return AuthenticationResponse(jwtToken, refreshToken, logins = loginService.getLast5Logins(savedUser.id))
     }
 
     fun authenticate(authRequest: AuthenticationRequest): AuthenticationResponse {
@@ -53,7 +55,8 @@ class AuthenticationService(
         val refreshToken = jwtService.generateRefreshToken(user)
         revokeAllUserTokens(user)
         saveUserToken(user, jwtToken)
-        return AuthenticationResponse(jwtToken, refreshToken)
+        loginService.save(user)
+        return AuthenticationResponse(jwtToken, refreshToken, logins = loginService.getLast5Logins(user.id))
     }
 
     private fun saveUserToken(user: User, jwtToken: String) {
@@ -93,7 +96,7 @@ class AuthenticationService(
                 val accessToken = jwtService.generateToken(user)
                 revokeAllUserTokens(user)
                 saveUserToken(user, accessToken)
-                val authResponse = AuthenticationResponse(accessToken = accessToken, refreshToken = refreshToken)
+                val authResponse = AuthenticationResponse(accessToken = accessToken, refreshToken = refreshToken, logins = loginService.getLast5Logins(user.id))
                 ObjectMapper().writeValue(response.outputStream, authResponse)
             }
         }
