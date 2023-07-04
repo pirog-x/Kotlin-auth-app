@@ -17,9 +17,9 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 @RequiredArgsConstructor
-class JwtAuthenticationFilter(
-    @Autowired val jwtService: JwtService,
-    @Autowired val userDetailsService: UserDetailsService
+class JwtAuthenticationFilter @Autowired constructor (
+    val jwtService: JwtService,
+    val userDetailsService: UserDetailsService
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         @NonNull request: HttpServletRequest,
