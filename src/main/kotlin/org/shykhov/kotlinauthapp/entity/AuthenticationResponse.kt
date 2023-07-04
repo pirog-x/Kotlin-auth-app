@@ -10,6 +10,6 @@ class AuthenticationResponse (
     val accessToken: String,
     @JsonProperty("refresh_token")
     val refreshToken: String,
-    @JsonProperty("Last_five_logins")
+    @JsonProperty("last_five_logins")
     val logins: List<Login>
 )

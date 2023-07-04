@@ -5,8 +5,8 @@ import io.jsonwebtoken.io.IOException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.shykhov.kotlinauthapp.entity.*
+import org.shykhov.kotlinauthapp.exception.model.UserAlreadyExistException
 import org.shykhov.kotlinauthapp.repository.TokenRepository
-import org.shykhov.kotlinauthapp.repository.UserRepository
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -17,7 +17,7 @@ import java.util.function.Consumer
 
 @Service
 class AuthenticationService(
-    val userRepository: UserRepository,
+    val userService: UserService,
     val passwordEncoder: PasswordEncoder,
     val jwtService: JwtService,
     val authenticationManager: AuthenticationManager,
@@ -25,6 +25,10 @@ class AuthenticationService(
     val loginService: LoginService,
 ) {
     fun register(registerRequest: RegisterRequest): AuthenticationResponse {
+        if (userService.isUserExist(registerRequest.email)) {
+            throw UserAlreadyExistException(registerRequest.email)
+        }
+
         val user = User(
             id = 0,
             firstName = registerRequest.firstname,
@@ -34,7 +38,7 @@ class AuthenticationService(
             role = Role.USER,
             tokens = null
         )
-        val savedUser = userRepository.save(user)
+        val savedUser = userService.save(user)
         val jwtToken = jwtService.generateToken(user)
         val refreshToken = jwtService.generateRefreshToken(user)
 
@@ -50,7 +54,7 @@ class AuthenticationService(
                 authRequest.password
             )
         )
-        val user = userRepository.findByEmail(authRequest.email).orElseThrow()
+        val user = userService.findByEmail(authRequest.email).orElseThrow()
         val jwtToken = jwtService.generateToken(user)
         val refreshToken = jwtService.generateRefreshToken(user)
         revokeAllUserTokens(user)
@@ -90,7 +94,7 @@ class AuthenticationService(
         val refreshToken: String = authHeader.substring(7)
         val userEmail: String? = jwtService.extractUsername(refreshToken)
         if (userEmail != null) {
-            val user = userRepository.findByEmail(userEmail).orElseThrow()
+            val user = userService.findByEmail(userEmail).orElseThrow()
 
             if (jwtService.isTokenValid(refreshToken, user)) {
                 val accessToken = jwtService.generateToken(user)

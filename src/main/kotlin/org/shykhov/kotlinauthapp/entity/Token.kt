@@ -1,6 +1,7 @@
 package org.shykhov.kotlinauthapp.entity
 
 import jakarta.persistence.*
+import jakarta.validation.constraints.NotBlank
 import lombok.AccessLevel
 import lombok.AllArgsConstructor
 import lombok.NoArgsConstructor
@@ -15,6 +16,7 @@ data class Token (
     @GeneratedValue
     val id: Int,
 
+    @NotBlank(message = "Token cannot be blank.")
     @Column(unique = true)
     val token: String,
 

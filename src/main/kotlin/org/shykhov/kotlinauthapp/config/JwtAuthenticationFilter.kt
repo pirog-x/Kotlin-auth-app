@@ -1,5 +1,7 @@
 package org.shykhov.kotlinauthapp.config
 
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -7,11 +9,13 @@ import lombok.RequiredArgsConstructor
 import org.shykhov.kotlinauthapp.repository.TokenRepository
 import org.shykhov.kotlinauthapp.service.JwtService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.lang.NonNull
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -28,23 +32,34 @@ class JwtAuthenticationFilter @Autowired constructor (
         @NonNull response: HttpServletResponse,
         @NonNull filterChain: FilterChain
     ) {
-        val authHeader: String? = request.getHeader("Authorization")
-        if (authHeader == null || !authHeader.startsWith("Bearer")) {
-            filterChain.doFilter(request, response)
-            return
-        }
-        val jwtToken: String = authHeader.substring(7)
-        val userEmail: String? = jwtService.extractUsername(jwtToken)
-        if (userEmail != null && SecurityContextHolder.getContext().authentication == null) {
-            val userDetails: UserDetails = userDetailsService.loadUserByUsername(userEmail)
-            val isTokenValid = tokenRepository.findByToken(jwtToken)
-                .map{t -> !t.expired && !t.revoked}
-                .orElse(false)
-            if (jwtService.isTokenValid(jwtToken, userDetails) && isTokenValid) {
-                val authToken= UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
-                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = authToken
+        try {
+            val authHeader: String? = request.getHeader("Authorization")
+            if (authHeader == null || !authHeader.startsWith("Bearer")) {
+                filterChain.doFilter(request, response)
+                return
             }
+            val jwtToken: String = authHeader.substring(7)
+            val userEmail: String? = jwtService.extractUsername(jwtToken)
+            if (userEmail != null && SecurityContextHolder.getContext().authentication == null) {
+                val userDetails: UserDetails = userDetailsService.loadUserByUsername(userEmail)
+                val isTokenValid = tokenRepository.findByToken(jwtToken)
+                    .map{t -> !t.expired && !t.revoked}
+                    .orElse(false)
+                if (jwtService.isTokenValid(jwtToken, userDetails) && isTokenValid) {
+                    val authToken= UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+                    authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    SecurityContextHolder.getContext().authentication = authToken
+                }
+            }
+        } catch (malformedException: MalformedJwtException) {
+            logger.warn("User do request with malformed jwt.")
+            response.sendError(HttpStatus.BAD_REQUEST.value())
+        } catch (expiredJwt: ExpiredJwtException) {
+            logger.warn("User do request with expired jwt.")
+            response.sendError(HttpStatus.BAD_REQUEST.value())
+        } catch (ex: UsernameNotFoundException) {
+            logger.warn("User email from jwt token doesn't exist.")
+            response.sendError(HttpStatus.BAD_REQUEST.value())
         }
         filterChain.doFilter(request, response)
     }

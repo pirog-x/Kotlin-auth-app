@@ -1,7 +1,7 @@
-package org.shykhov.kotlinauthapp.exception
+package org.shykhov.kotlinauthapp.exception.model
 
 import java.util.*
 
-class EntityNotFoundException(id: Long, entity: Class<*>) : RuntimeException(
+class EntityNotFoundException(id: String, entity: Class<*>) : RuntimeException(
     "The " + entity.simpleName.lowercase(Locale.getDefault()) + " with id '" + id + "' does not exist in our records."
 )

@@ -1,6 +1,6 @@
 package org.shykhov.kotlinauthapp.service
 
-import org.shykhov.kotlinauthapp.exception.EntityNotFoundException
+import org.shykhov.kotlinauthapp.exception.model.EntityNotFoundException
 import org.shykhov.kotlinauthapp.entity.User
 import org.shykhov.kotlinauthapp.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -11,12 +11,25 @@ class UserService(
     val userRepository: UserRepository
 ) {
 
-    fun getUser(username: String): User {
-        val user: Optional<User> = userRepository.findByEmail(username)
-        return unwrapUser(user, 404L)
+    fun get(email: String): User {
+        val user: Optional<User> = userRepository.findByEmail(email)
+        return unwrapUser(user, email)
     }
 
-    fun unwrapUser(entity: Optional<User>, id: Long): User {
+    fun save(user: User): User {
+        return userRepository.save(user)
+    }
+
+    fun isUserExist(email: String): Boolean {
+        val user = userRepository.findByEmail(email)
+        return user.isPresent
+    }
+
+    fun findByEmail(email: String): Optional<User> {
+        return userRepository.findByEmail(email)
+    }
+
+    private fun unwrapUser(entity: Optional<User>, id: String): User {
         return if (entity.isPresent) entity.get()
         else throw EntityNotFoundException(id, User::class.java)
     }
