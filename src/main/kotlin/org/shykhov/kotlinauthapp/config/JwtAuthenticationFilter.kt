@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import lombok.RequiredArgsConstructor
+import org.shykhov.kotlinauthapp.repository.TokenRepository
 import org.shykhov.kotlinauthapp.service.JwtService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.lang.NonNull
@@ -19,7 +20,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 @RequiredArgsConstructor
 class JwtAuthenticationFilter @Autowired constructor (
     val jwtService: JwtService,
-    val userDetailsService: UserDetailsService
+    val userDetailsService: UserDetailsService,
+    val tokenRepository: TokenRepository,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         @NonNull request: HttpServletRequest,
@@ -35,7 +37,10 @@ class JwtAuthenticationFilter @Autowired constructor (
         val userEmail: String? = jwtService.extractUsername(jwtToken)
         if (userEmail != null && SecurityContextHolder.getContext().authentication == null) {
             val userDetails: UserDetails = userDetailsService.loadUserByUsername(userEmail)
-            if (jwtService.isTokenValid(jwtToken, userDetails)) {
+            val isTokenValid = tokenRepository.findByToken(jwtToken)
+                .map{t -> !t.expired && !t.revoked}
+                .orElse(false)
+            if (jwtService.isTokenValid(jwtToken, userDetails) && isTokenValid) {
                 val authToken= UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authToken

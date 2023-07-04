@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler
 class SecurityConfiguration (
     private val jwtAuthFilter: JwtAuthenticationFilter,
     private val authenticationProvider: AuthenticationProvider,
-//    private val logoutHandler: LogoutHandler
+    private val logoutHandler: LogoutHandler
 ) {
 
     @Bean
@@ -49,7 +49,7 @@ class SecurityConfiguration (
             .requestMatchers(HttpMethod.POST, "/api/v1/management/**").hasAnyAuthority(Permission.ADMIN_CREATE.name, Permission.MANAGER_CREATE.name)
             .requestMatchers(HttpMethod.PUT, "/api/v1/management/**").hasAnyAuthority(Permission.ADMIN_UPDATE.name, Permission.MANAGER_UPDATE.name)
             .requestMatchers(HttpMethod.DELETE, "/api/v1/management/**")
-            .hasAnyAuthority(Permission.ADMIN_DELETE.name, org.shykhov.kotlinauthapp.config.Permission.MANAGER_DELETE.name)
+            .hasAnyAuthority(Permission.ADMIN_DELETE.name, Permission.MANAGER_DELETE.name)
 
             .anyRequest()
             .authenticated()
@@ -61,7 +61,7 @@ class SecurityConfiguration (
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .logout()
             .logoutUrl("/api/v1/auth/logout")
-//            .addLogoutHandler(logoutHandler)
+            .addLogoutHandler(logoutHandler)
             .logoutSuccessHandler { request, response, authentication -> SecurityContextHolder.clearContext() }
 
         return http.build()
