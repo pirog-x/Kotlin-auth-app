@@ -1,5 +1,6 @@
 package org.shykhov.kotlinauthapp.controller
 
+import org.shykhov.kotlinauthapp.entity.AuthenticationRequest
 import org.shykhov.kotlinauthapp.entity.AuthenticationResponse
 import org.shykhov.kotlinauthapp.entity.RegisterRequest
 import org.shykhov.kotlinauthapp.service.AuthenticationService
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.rmi.registry.Registry
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -21,7 +21,7 @@ class AuthenticationController (
     }
 
     @PostMapping("/authenticate")
-    fun authenticate(@RequestBody registerRequest: RegisterRequest): ResponseEntity<AuthenticationResponse> {
-        return ResponseEntity.ok(authService.authenticate(registerRequest))
+    fun authenticate(@RequestBody authRequest: AuthenticationRequest ): ResponseEntity<AuthenticationResponse> {
+        return ResponseEntity.ok(authService.authenticate(authRequest))
     }
 }

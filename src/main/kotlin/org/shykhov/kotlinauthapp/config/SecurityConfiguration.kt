@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler
 class SecurityConfiguration (
     private val jwtAuthFilter: JwtAuthenticationFilter,
     private val authenticationProvider: AuthenticationProvider,
-    private val logoutHandler: LogoutHandler
+//    private val logoutHandler: LogoutHandler
 ) {
 
     @Bean
@@ -61,7 +61,7 @@ class SecurityConfiguration (
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .logout()
             .logoutUrl("/api/v1/auth/logout")
-            .addLogoutHandler(logoutHandler)
+//            .addLogoutHandler(logoutHandler)
             .logoutSuccessHandler { request, response, authentication -> SecurityContextHolder.clearContext() }
 
         return http.build()
