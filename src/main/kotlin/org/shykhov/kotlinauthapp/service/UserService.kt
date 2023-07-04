@@ -1,8 +1,8 @@
 package org.shykhov.kotlinauthapp.service
 
 import org.shykhov.kotlinauthapp.exception.EntityNotFoundException
-import org.shykhov.kotlinauthapp.dao.entity.User
-import org.shykhov.kotlinauthapp.dao.repository.UserRepository
+import org.shykhov.kotlinauthapp.entity.User
+import org.shykhov.kotlinauthapp.repository.UserRepository
 import org.springframework.stereotype.Service
 import java.util.*
 

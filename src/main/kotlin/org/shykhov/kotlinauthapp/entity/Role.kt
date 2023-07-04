@@ -1,4 +1,4 @@
-package org.shykhov.kotlinauthapp.dao.entity
+package org.shykhov.kotlinauthapp.entity
 
 
 enum class Role {

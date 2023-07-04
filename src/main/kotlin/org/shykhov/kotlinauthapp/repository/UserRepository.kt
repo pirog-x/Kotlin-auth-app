@@ -1,6 +1,6 @@
-package org.shykhov.kotlinauthapp.dao.repository
+package org.shykhov.kotlinauthapp.repository
 
-import org.shykhov.kotlinauthapp.dao.entity.User
+import org.shykhov.kotlinauthapp.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 

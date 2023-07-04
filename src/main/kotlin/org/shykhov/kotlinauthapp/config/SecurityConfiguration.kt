@@ -1,6 +1,6 @@
 package org.shykhov.kotlinauthapp.config
 
-import org.shykhov.kotlinauthapp.dao.entity.Role
+import org.shykhov.kotlinauthapp.entity.Role
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
