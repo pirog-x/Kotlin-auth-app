@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.io.IOException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import org.shykhov.kotlinauthapp.entity.*
+import org.shykhov.kotlinauthapp.exception.model.EntityNotFoundException
 import org.shykhov.kotlinauthapp.exception.model.UserAlreadyExistException
 import org.shykhov.kotlinauthapp.repository.TokenRepository
 import org.springframework.http.HttpHeaders
@@ -24,7 +26,7 @@ class AuthenticationService(
     val tokenRepository: TokenRepository,
     val loginService: LoginService,
 ) {
-    fun register(registerRequest: RegisterRequest): AuthenticationResponse {
+    fun register(@Valid registerRequest: RegisterRequest): AuthenticationResponse {
         if (userService.isUserExist(registerRequest.email)) {
             throw UserAlreadyExistException(registerRequest.email)
         }
